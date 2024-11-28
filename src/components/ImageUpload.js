@@ -52,6 +52,17 @@ const ImageUpload = () => {
         padding: "20px",
       }}
     >
+      {/* Title */}
+      <h1
+        style={{
+          fontSize: "36px",
+          textAlign: "center",
+          marginBottom: "20px",
+        }}
+      >
+        AI-Assisted Image Captioning
+      </h1>
+
       {/* Toggle Dark/Light Mode */}
       <button
         onClick={toggleTheme}
@@ -113,7 +124,7 @@ const ImageUpload = () => {
               backgroundColor: darkMode ? "#444" : "#f9f9f9",
               padding: "10px",
               height: "300px",
-              width: "300px", // Ensure both boxes have the same width
+              width: "300px",
             }}
           >
             <img
@@ -140,8 +151,8 @@ const ImageUpload = () => {
               borderRadius: "10px",
               backgroundColor: darkMode ? "#555" : "#f9f9f9",
               padding: "10px",
-              height: "300px", // Same height as image box
-              width: "300px", // Same width as image box
+              height: "300px",
+              width: "300px",
             }}
           >
             <h3 style={{ color: darkMode ? "#fff" : "#000", textAlign: "center" }}>Caption:</h3>
