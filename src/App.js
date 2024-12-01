@@ -7,6 +7,7 @@ function App() {
         <div>
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
                 <img src={logo} alt="Veridian Logo" style={{ width: '300px', marginBottom: '10px' }} />
+                <h1>AI Image Captioning</h1>
                 
             </div>
             <ImageUpload />
