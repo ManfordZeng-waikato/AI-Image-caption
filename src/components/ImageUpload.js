@@ -1,47 +1,59 @@
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 
-const ImageUpload = () => {
+const MultiImageUpload = () => {
   const [files, setFiles] = useState([]);
-  const [caption, setCaption] = useState("");
-  const [status, setStatus] = useState("");
   const [history, setHistory] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
 
   const onDrop = (acceptedFiles) => {
-    setFiles(
-      acceptedFiles.map((file) =>
-        Object.assign(file, { preview: URL.createObjectURL(file) })
-      )
+    const newFiles = acceptedFiles.map((file) =>
+      Object.assign(file, { preview: URL.createObjectURL(file), caption: "", status: "" })
     );
-    setCaption("");
-    setStatus("");
+    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
   };
 
-  const generateCaption = () => {
-    if (files.length > 0) {
-      const fileName = files[0].name;
-      setCaption(`This is an example caption for ${fileName}`);
-      setStatus("");
-    }
+  const generateCaption = (index) => {
+    const updatedFiles = [...files];
+    updatedFiles[index].caption = `This is an example caption for ${updatedFiles[index].name}`;
+    setFiles(updatedFiles);
   };
 
-  const approveCaption = () => {
-    setStatus("Approved");
-    setHistory([...history, { file: files[0], caption, status: "Approved" }]);
-  };
+  const updateStatus = (index, status) => {
+    const updatedFiles = [...files];
+    updatedFiles[index].status = status;
+    setFiles(updatedFiles);
 
-  const rejectCaption = () => {
-    setStatus("Rejected");
-    setHistory([...history, { file: files[0], caption, status: "Rejected" }]);
+    // Add to history
+    setHistory((prevHistory) => [
+      ...prevHistory,
+      {
+        file: updatedFiles[index],
+        caption: updatedFiles[index].caption,
+        status,
+      },
+    ]);
   };
 
   const toggleTheme = () => setDarkMode(!darkMode);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    multiple: false,
+    multiple: true,
   });
+
+  const downloadJSON = () => {
+    const jsonContent = JSON.stringify(files, null, 2); // Pretty print JSON
+    const blob = new Blob([jsonContent], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "imageDetails.json"; // File name for download
+    a.click();
+
+    URL.revokeObjectURL(url); // Clean up the URL object
+  };
 
   return (
     <div
@@ -52,17 +64,6 @@ const ImageUpload = () => {
         padding: "20px",
       }}
     >
-      {/* Title */}
-      <h1
-        style={{
-          fontSize: "36px",
-          textAlign: "center",
-          marginBottom: "20px",
-        }}
-      >
-        AI-Assisted Image Captioning
-      </h1>
-
       {/* Toggle Dark/Light Mode */}
       <button
         onClick={toggleTheme}
@@ -102,112 +103,90 @@ const ImageUpload = () => {
         </p>
       </div>
 
-      {/* Uploaded Image and Caption Section */}
-      {files.length > 0 && (
-        <div
-          style={{
-            marginTop: "20px",
-            display: "flex",
-            gap: "20px",
-            justifyContent: "center",
-          }}
-        >
-          {/* Image Section with Box */}
+      {/* Uploaded Images */}
+      <div
+        style={{
+          marginTop: "20px",
+          display: "grid",
+          gap: "20px",
+          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+        }}
+      >
+        {files.map((file, index) => (
           <div
+            key={index}
             style={{
-              flex: "1",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
               border: "2px solid #ccc",
               borderRadius: "10px",
               backgroundColor: darkMode ? "#444" : "#f9f9f9",
               padding: "10px",
-              height: "300px",
-              width: "300px",
             }}
           >
+            {/* Image Preview */}
             <img
-              src={files[0].preview}
-              alt="preview"
+              src={file.preview}
+              alt={`preview-${index}`}
               style={{
                 width: "100%",
-                height: "100%",
+                height: "200px",
                 objectFit: "contain",
                 borderRadius: "5px",
               }}
             />
-          </div>
-
-          {/* Caption Section with Box */}
-          <div
-            style={{
-              flex: "1",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              border: "2px solid #ccc",
-              borderRadius: "10px",
-              backgroundColor: darkMode ? "#555" : "#f9f9f9",
-              padding: "10px",
-              height: "300px",
-              width: "300px",
-            }}
-          >
-            <h3 style={{ color: darkMode ? "#fff" : "#000", textAlign: "center" }}>Caption:</h3>
-            <p style={{ color: darkMode ? "#fff" : "#000", textAlign: "center" }}>{caption}</p>
             <div style={{ marginTop: "10px" }}>
-              <button
-                onClick={approveCaption}
-                style={{
-                  marginRight: "10px",
-                  padding: "10px 20px",
-                  cursor: "pointer",
-                  backgroundColor: "#28a745",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "5px",
-                }}
-              >
-                Approve
-              </button>
-              <button
-                onClick={rejectCaption}
-                style={{
-                  padding: "10px 20px",
-                  cursor: "pointer",
-                  backgroundColor: "#dc3545",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "5px",
-                }}
-              >
-                Reject
-              </button>
+              <h4 style={{ color: darkMode ? "#fff" : "#000" }}>Caption:</h4>
+              <p>{file.caption || "No caption generated yet."}</p>
             </div>
+            {!file.caption && (
+              <button
+                onClick={() => generateCaption(index)}
+                style={{
+                  marginTop: "10px",
+                  padding: "10px 20px",
+                  cursor: "pointer",
+                  backgroundColor: "#007BFF",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "5px",
+                }}
+              >
+                Generate Caption
+              </button>
+            )}
+            {file.caption && !file.status && (
+              <div style={{ marginTop: "10px" }}>
+                <button
+                  onClick={() => updateStatus(index, "Approved")}
+                  style={{
+                    marginRight: "10px",
+                    padding: "10px 20px",
+                    cursor: "pointer",
+                    backgroundColor: "#28a745",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "5px",
+                  }}
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={() => updateStatus(index, "Rejected")}
+                  style={{
+                    padding: "10px 20px",
+                    cursor: "pointer",
+                    backgroundColor: "#dc3545",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "5px",
+                  }}
+                >
+                  Reject
+                </button>
+              </div>
+            )}
           </div>
-        </div>
-      )}
-
-      {/* Generate Caption Button */}
-      {files.length > 0 && !caption && (
-        <div style={{ marginTop: "20px", textAlign: "center" }}>
-          <button
-            onClick={generateCaption}
-            style={{
-              padding: "10px 20px",
-              cursor: "pointer",
-              backgroundColor: "#007BFF",
-              color: "#fff",
-              border: "none",
-              borderRadius: "5px",
-            }}
-          >
-            Generate Caption
-          </button>
-        </div>
-      )}
+        ))}
+      </div>
 
       {/* History Section */}
       <div style={{ marginTop: "40px" }}>
@@ -241,36 +220,23 @@ const ImageUpload = () => {
         )}
       </div>
 
-      {/* Download Button */}
-      <div style={{ marginTop: "20px", textAlign: "center" }}>
-        <button
-          onClick={() => {
-            const data = history.map(item => ({
-              fileName: item.file.name,
-              caption: item.caption,
-              status: item.status,
-            }));
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = "captions-history.json";
-            link.click();
-          }}
-          style={{
-            padding: "10px 20px",
-            cursor: "pointer",
-            backgroundColor: "#007BFF",
-            color: "#fff",
-            border: "none",
-            borderRadius: "5px",
-          }}
-        >
-          Download History
-        </button>
-      </div>
+      {/* Download JSON Button */}
+      <button
+        onClick={downloadJSON}
+        style={{
+          marginTop: "20px",
+          padding: "10px 20px",
+          cursor: "pointer",
+          backgroundColor: darkMode ? "#555" : "#007BFF",
+          color: "#fff",
+          border: "none",
+          borderRadius: "5px",
+        }}
+      >
+        Download JSON
+      </button>
     </div>
   );
 };
 
-export default ImageUpload;
+export default MultiImageUpload;
