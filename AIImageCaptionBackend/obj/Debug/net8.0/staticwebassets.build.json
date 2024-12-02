@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "T+veVvoT0SMuv1T2E7iY3KDRMbgYes9/SHJ1Jy6adw0=",
+  "Source": "AIImageCaptionBackend",
+  "BasePath": "_content/AIImageCaptionBackend",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

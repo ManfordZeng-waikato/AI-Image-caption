@@ -1,0 +1,6 @@
+@AIImageCaptionBackend_HostAddress = http://localhost:5104
+
+GET {{AIImageCaptionBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
